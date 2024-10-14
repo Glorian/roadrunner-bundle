@@ -20,7 +20,8 @@ final class GrpcWorker implements WorkerInterface
         private LoggerInterface $logger,
         private RoadRunnerWorker $roadRunnerWorker,
         private GrpcServiceProvider $grpcServiceProvider,
-        private Server $server
+        private Server $server,
+        private WorkerFinalizerInterface $workerFinalizer,
     ) {
     }
 
@@ -38,6 +39,8 @@ final class GrpcWorker implements WorkerInterface
             $this->server->registerService($interface, $service);
         }
 
-        $this->server->serve($this->roadRunnerWorker);
+        $this->workerFinalizer->setRegisteredServices($this->grpcServiceProvider->getRegisteredServices());
+
+        $this->server->serve($this->roadRunnerWorker, $this->workerFinalizer);
     }
 }

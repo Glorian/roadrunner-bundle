@@ -13,9 +13,11 @@ use Baldinof\RoadRunnerBundle\Http\RequestHandlerInterface;
 use Baldinof\RoadRunnerBundle\Reboot\KernelRebootStrategyInterface;
 use Baldinof\RoadRunnerBundle\RoadRunnerBridge\HttpFoundationWorker;
 use Baldinof\RoadRunnerBundle\RoadRunnerBridge\HttpFoundationWorkerInterface;
+use Baldinof\RoadRunnerBundle\Worker\GrpcResetWorkerFinalizer;
 use Baldinof\RoadRunnerBundle\Worker\GrpcWorker as InternalGrpcWorker;
 use Baldinof\RoadRunnerBundle\Worker\HttpDependencies;
 use Baldinof\RoadRunnerBundle\Worker\HttpWorker as InternalHttpWorker;
+use Baldinof\RoadRunnerBundle\Worker\WorkerFinalizerInterface;
 use Baldinof\RoadRunnerBundle\Worker\WorkerRegistry;
 use Baldinof\RoadRunnerBundle\Worker\WorkerRegistryInterface;
 use Psr\Log\LoggerInterface;
@@ -64,6 +66,8 @@ return static function (ContainerConfigurator $container) {
 
     $services->set(WorkerRegistryInterface::class, WorkerRegistry::class)
         ->public();
+
+    $services->set(WorkerFinalizerInterface::class, GrpcResetWorkerFinalizer::class);
 
     $services->set(InternalHttpWorker::class)
         ->public() // Manually retrieved on the DIC in the Worker if the kernel has been rebooted
@@ -116,6 +120,7 @@ return static function (ContainerConfigurator $container) {
                 service(RoadRunnerWorkerInterface::class),
                 service(GrpcServiceProvider::class),
                 service(GrpcServer::class),
+                service(WorkerFinalizerInterface::class)
             ]);
 
         $services
